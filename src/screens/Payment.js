@@ -77,13 +77,17 @@ const Payment = props => {
 
   const submit = async () => {
     try {
-      await PaymentsService.newPayment(form)
+      if (paymentId) {
+        await PaymentsService.editPayment(paymentId, form)
+      } else {
+        await PaymentsService.newPayment(form)
+      }
+      props.navigation.navigate('Dashboard', { refresh: true })
       Toast.show({
-        text: 'Pagamento adicionado com sucesso!',
+        text: `Pagamento ${paymentId ? 'editado' : 'adicionado'} com sucesso!`,
         duration: 3000,
         type: 'success'
       })
-      props.navigation.navigate('Payment')
     } catch (error) {
       Toast.show({
         text: error.message,

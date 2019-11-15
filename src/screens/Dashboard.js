@@ -23,7 +23,7 @@ const Dashboard = props => {
     if (refreshing) {
       getPayments()
     }
-  }, [refreshing])
+  }, [refreshing, props.navigation])
 
   useEffect(() => {
     if (toDelete) {
