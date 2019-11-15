@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Text, FlatList, View, StyleSheet } from 'react-native'
+import { Text, FlatList, View, StyleSheet, Alert } from 'react-native'
 import { Container, Fab, Icon, Button } from 'native-base'
 import { format } from 'date-fns'
 
@@ -8,6 +8,7 @@ import PaymentsService from '../services/Payments/Payments'
 const Dashboard = props => {
   const [payments, setPayments] = useState([])
   const [refreshing, setRefreshing] = useState(true)
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     const getPayments = async () => {
@@ -24,6 +25,39 @@ const Dashboard = props => {
     }
   }, [refreshing])
 
+  useEffect(() => {
+    if (toDelete) {
+      Alert.alert(
+        'Confirmar exclusão',
+        `Deseja realmente apagar o pagamento ${
+          payments.find(p => p._id === toDelete).descricao
+        }?`,
+        [
+          {
+            text: 'Sim',
+            onPress: () => requestDelete(toDelete)
+          },
+          {
+            text: 'Não',
+            onPress: () => setToDelete(null),
+            style: 'cancel'
+          }
+        ],
+        { cancelable: false }
+      )
+    }
+  }, [payments, toDelete])
+
+  const requestDelete = async paymentId => {
+    try {
+      await PaymentsService.deletePayment(paymentId)
+      setToDelete(null)
+      setRefreshing(true)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   return (
     <Container>
       <FlatList
@@ -32,14 +66,30 @@ const Dashboard = props => {
         onRefresh={() => setRefreshing(true)}
         renderItem={({ item }) => (
           <View style={styles.listContainer}>
-            <Button
-              icon
-              style={styles.editButton}
-              onPress={() =>
-                props.navigation.navigate('Payment', { paymentId: item._id })
-              }>
-              <Icon name="edit" type="MaterialIcons" style={styles.editIcon} />
-            </Button>
+            <View style={styles.buttonsContainer}>
+              <Button
+                icon
+                style={styles.editButton}
+                onPress={() =>
+                  props.navigation.navigate('Payment', { paymentId: item._id })
+                }>
+                <Icon
+                  name="edit"
+                  type="MaterialIcons"
+                  style={styles.editIcon}
+                />
+              </Button>
+              <Button
+                icon
+                style={styles.deleteButton}
+                onPress={() => setToDelete(item._id)}>
+                <Icon
+                  name="delete"
+                  type="MaterialIcons"
+                  style={styles.deleteIcon}
+                />
+              </Button>
+            </View>
             <Text style={styles.listTitle}>{item.descricao}</Text>
             <Text style={styles.listValue}>
               Vencimento: {format(new Date(item.dt_vencimento), 'dd/MM/yyyy')}
@@ -99,10 +149,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8
   },
-  editButton: {
+  buttonsContainer: {
     position: 'absolute',
     right: 16,
     top: 16,
+    flexDirection: 'row'
+  },
+  editButton: {
     backgroundColor: '#FFFC45',
     borderRadius: 9999,
     alignItems: 'center',
@@ -111,6 +164,18 @@ const styles = StyleSheet.create({
   },
   editIcon: {
     color: 'black',
+    fontSize: 16
+  },
+  deleteButton: {
+    backgroundColor: '#FF0545',
+    borderRadius: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+    marginLeft: 8
+  },
+  deleteIcon: {
+    color: 'white',
     fontSize: 16
   },
   listTitle: {
