@@ -94,9 +94,7 @@ const Dashboard = props => {
             <Text style={styles.listValue}>
               Vencimento: {format(new Date(item.dt_vencimento), 'dd/MM/yyyy')}
             </Text>
-            <Text style={styles.listValue}>
-              R$ {(item.valor / 100).toFixed(2)}
-            </Text>
+            <Text style={styles.listValue}>R$ {item.valor.toFixed(2)}</Text>
             <Text style={styles.listValue}>
               {item.dt_pgto
                 ? `Pago em ${format(
@@ -107,12 +105,12 @@ const Dashboard = props => {
             </Text>
             <Text style={styles.listValue}>
               {item.vr_multa
-                ? `Multa: ${(item.vr_multa / 100).toFixed(2)}`
+                ? `Multa: R$ ${item.vr_multa.toFixed(2)}`
                 : 'Sem multa'}
             </Text>
             <Text style={styles.listValue}>
               {item.vr_juro
-                ? `Juros: ${(item.vr_juro / 100).toFixed(2)}`
+                ? `Juros: R$ ${item.vr_juro.toFixed(2)}`
                 : 'Sem juros'}
             </Text>
             <View style={styles.tiposContainer}>
