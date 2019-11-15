@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
+import { StyleSheet, ScrollView } from 'react-native'
 import {
   Form,
   Item,
@@ -58,9 +58,11 @@ const Payment = props => {
           const payment = (await PaymentsService.getPayment(paymentId)).data
           setForm({
             descricao: payment.descricao,
-            dt_vencimento: new Date(payment.dt_vencimento),
+            dt_vencimento: payment.dt_vencimento
+              ? new Date(payment.dt_vencimento)
+              : '',
             valor: payment.valor,
-            dt_pgto: new Date(payment.dt_pgto) || '',
+            dt_pgto: payment.dt_pgto ? new Date(payment.dt_pgto) : '',
             vr_multa: payment.vr_multa || '',
             vr_juro: payment.vr_juro || '',
             tipo_pgto: payment.id_tipo_pgto._id,
