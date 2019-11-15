@@ -17,9 +17,11 @@ const DashboardStack = createStackNavigator({
 
   Payment: {
     screen: PaymentScreen,
-    navigationOptions: {
-      title: 'Pagamento'
-    }
+    navigationOptions: ({ navigation }) => ({
+      title: `${
+        navigation.getParam('paymentId') ? 'Editar' : 'Adicionar'
+      } Pagamento`
+    })
   }
 })
 

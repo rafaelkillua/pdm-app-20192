@@ -19,7 +19,9 @@ const Dashboard = props => {
         console.error(error)
       }
     }
-    getPayments()
+    if (refreshing) {
+      getPayments()
+    }
   }, [refreshing])
 
   return (
