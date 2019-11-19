@@ -157,6 +157,7 @@ const Payment = props => {
               <Picker
                 mode="dropdown"
                 iosIcon={<Icon name="arrow-down" />}
+                note={false}
                 style={{ width: undefined }}
                 placeholderIconColor="#007aff"
                 selectedValue={form.tipo_pgto}

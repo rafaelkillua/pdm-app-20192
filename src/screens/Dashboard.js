@@ -1,29 +1,61 @@
 import React, { useState, useEffect } from 'react'
 import { Text, FlatList, View, StyleSheet, Alert } from 'react-native'
 import { Container, Fab, Icon, Button } from 'native-base'
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 
+import FilterModal from '../components/Modals/Filter/FilterModal'
 import PaymentsService from '../services/Payments/Payments'
 
 const Dashboard = props => {
   const [payments, setPayments] = useState([])
   const [refreshing, setRefreshing] = useState(true)
   const [toDelete, setToDelete] = useState(null)
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [filters, setFilters] = useState({
+    startDate: subDays(new Date(), 7),
+    endDate: new Date(),
+    isAll: true,
+    isPaid: null,
+    expenseType: 'all',
+    paymentType: 'all'
+  })
+  const [paymentTypes, setPaymentTypes] = useState([])
+  const [expenseTypes, setExpenseTypes] = useState([])
+
+  useEffect(() => {
+    props.navigation.setParams({ openFilters: () => setIsFiltersOpen(true) })
+    //eslint-disable-next-line
+  }, [])
+
+  useEffect(() => {
+    const getOptions = async () => {
+      try {
+        const paymentTypesResult = (await PaymentsService.getPaymentTypes())
+          .data
+        const expenseTypesResult = (await PaymentsService.getExpenseTypes())
+          .data
+        setPaymentTypes(paymentTypesResult)
+        setExpenseTypes(expenseTypesResult)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    getOptions()
+  }, [])
 
   useEffect(() => {
     const getPayments = async () => {
       try {
-        const response = (await PaymentsService.getPayments()).data
+        const response = (await PaymentsService.getPayments(filters)).data
         setPayments(response)
         setRefreshing(false)
       } catch (error) {
         console.error(error)
       }
     }
-    if (refreshing) {
-      getPayments()
-    }
-  }, [refreshing, props.navigation])
+
+    getPayments()
+  }, [refreshing, filters])
 
   useEffect(() => {
     if (toDelete) {
@@ -64,6 +96,7 @@ const Dashboard = props => {
         data={payments}
         refreshing={refreshing}
         onRefresh={() => setRefreshing(true)}
+        ListEmptyComponent={<Text style={styles.noData}>Não há dados.</Text>}
         renderItem={({ item }) => (
           <View style={styles.listContainer}>
             <View style={styles.buttonsContainer}>
@@ -125,23 +158,28 @@ const Dashboard = props => {
         )}
         keyExtractor={item => item._id}
       />
-      <View>
-        <Fab
-          style={styles.fab}
-          position="bottomRight"
-          onPress={() => props.navigation.navigate('Payment')}>
-          <Icon name="add" />
-        </Fab>
-      </View>
+      <Fab
+        style={styles.fab}
+        position="bottomRight"
+        onPress={() => props.navigation.navigate('Payment')}>
+        <Icon name="add" />
+      </Fab>
+      <FilterModal
+        isFiltersOpen={isFiltersOpen}
+        setIsFiltersOpen={setIsFiltersOpen}
+        filters={filters}
+        setFilters={setFilters}
+        paymentTypes={paymentTypes}
+        expenseTypes={expenseTypes}
+      />
     </Container>
   )
 }
 
 const styles = StyleSheet.create({
   listContainer: {
-    backgroundColor: '#D5FFFF',
-    borderBottomColor: '#4346FF',
-    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+    borderBottomWidth: 2,
     paddingLeft: 16,
     paddingRight: 16,
     paddingTop: 8,
@@ -206,6 +244,12 @@ const styles = StyleSheet.create({
   },
   fab: {
     backgroundColor: '#5067FF'
+  },
+  noData: {
+    textAlign: 'center',
+    marginTop: 16,
+    fontSize: 20,
+    color: 'red'
   }
 })
 
